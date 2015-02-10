@@ -14,10 +14,18 @@ chrome.extension.onMessage.addListener(function(request, sender) {
     var sampleText = strip_tags(request.source);
     var rawWordData = extractWords(sampleText);
     var wordDictionary = makeWordDictionary(rawWordData);
-    var keys = Object.keys(wordDictionary);
-    var index = parseInt(Math.random()*keys.length);
+    var translateData = translateWords(wordDictionary);
 
-    dictList = [];
+    message.innerHTML = "";
+  }
+});
+
+//번역, 검색 불가능 단어 제거
+function translateWords(wordDictionary) {
+  var keys = Object.keys(wordDictionary);
+    var index = parseInt(Math.random()*keys.length);
+    var dictList = [];
+
     for(var i =0; i<keys.length; i++){
       var url = "http://tooltip.dic.naver.com/tooltip.nhn?wordString=" + keys[i] + "&languageCode=4&nlp=false";
       xhrGet(url, function(xhr) {
@@ -28,9 +36,10 @@ chrome.extension.onMessage.addListener(function(request, sender) {
         }
       });
     }
-  }
-});
+    return dictList
+}
 
+//중복 단어 제거, Dictionary형태로 재구성
 function makeWordDictionary(rawData) {
   var wordList = rawData;
   var wordDict = {}
@@ -45,7 +54,7 @@ function makeWordDictionary(rawData) {
   return wordDict;
 }
 
-
+//단어 단위로 분류, 공백과 불필요 문자, 숫자 제거
 function extractWords(sampleText) {
   //return sampleText.replace(/^\s/gm, '');
   sampleText = sampleText.replace(/[&nbsp,\d*];/g, '');
@@ -55,6 +64,7 @@ function extractWords(sampleText) {
   return sampleText;
 }
 
+//HTML태그 제거
 function strip_tags (input, allowed) {
     allowed = (((allowed || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join(''); // making sure the allowed arg is a string containing only tags in lowercase (<a><b><c>)
     var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
