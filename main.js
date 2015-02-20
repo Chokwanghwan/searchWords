@@ -3,11 +3,11 @@ function xhrGet(url, callback) {
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
-            callback(this)
+          callback(this);
         }
     };
     xhr.send()
-}
+};
 
 chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.action == "getSource") {
@@ -16,9 +16,21 @@ chrome.extension.onMessage.addListener(function(request, sender) {
     var wordDictionary = makeWordDictionary(rawWordData);
     var translateData = translateWords(wordDictionary);
 
+    for (var i=0; i<translateData.length; i++) {
+      console.log("translateData["+i+"] = "+translateData[i]);
+    }
+
     message.innerHTML = "";
   }
 });
+
+function printOnDiv(word) {
+    var div = document.createElement('div');
+    div.setAttribute('class', 'half tile');
+    document.body.appendChild(div); 
+
+    div.innerHTML=word;
+}
 
 //번역, 검색 불가능 단어 제거
 function translateWords(wordDictionary) {
@@ -31,13 +43,12 @@ function translateWords(wordDictionary) {
       xhrGet(url, function(xhr) {
         var obj = JSON.parse(xhr.responseText);
         if(obj.hasOwnProperty('entryName')){
-          console.log(obj['entryName']+":"+obj['mean']);
           dictList.push(obj['entryName']);
+          printOnDiv(obj['entryName']);
         }
       });
     }
-    return dictList
-}
+};
 
 //중복 단어 제거, Dictionary형태로 재구성
 function makeWordDictionary(rawData) {
@@ -52,7 +63,7 @@ function makeWordDictionary(rawData) {
       }
   }
   return wordDict;
-}
+};
 
 //단어 단위로 분류, 공백과 불필요 문자, 숫자 제거
 function extractWords(sampleText) {
@@ -62,7 +73,7 @@ function extractWords(sampleText) {
   sampleText = sampleText.match(/\b\w+\b/g);
 
   return sampleText;
-}
+};
 
 //HTML태그 제거
 function strip_tags (input, allowed) {
@@ -72,7 +83,7 @@ function strip_tags (input, allowed) {
     return input.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {        
       return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
     });
-}
+};
 
 function onWindowLoad() {
 
@@ -87,6 +98,6 @@ function onWindowLoad() {
     }
   });
 
-}
+};
 
 window.onload = onWindowLoad;
