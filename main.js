@@ -13,12 +13,10 @@ chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.action == "getSource") {
     var sampleText = strip_tags(request.source);
     var rawWordData = extractWords(sampleText);
+    console.log("testtesttest"+rawWordData);
+
     var wordDictionary = makeWordDictionary(rawWordData);
     var translateData = translateWords(wordDictionary);
-
-    for (var i=0; i<translateData.length; i++) {
-      console.log("translateData["+i+"] = "+translateData[i]);
-    }
 
     message.innerHTML = "";
   }
@@ -56,21 +54,26 @@ function makeWordDictionary(rawData) {
   var wordDict = {}
   for(var i=0; i<wordList.length; i++){
       var word = wordList[i];
+      console.log("test["+i+"] = "+word);
       if (wordDict.hasOwnProperty(word)) {
         wordDict[word]++;
       } else {
         wordDict[word] = 1;
       }
   }
+
   return wordDict;
 };
 
-//단어 단위로 분류, 공백과 불필요 문자, 숫자 제거
+//단어 단위로 분류, 공백과 불필요 문자, 숫자 제거 + 알파벳 한개짜리 단어, return(특정 에러 유발) 제거
 function extractWords(sampleText) {
   //return sampleText.replace(/^\s/gm, '');
+  sampleText = sampleText.replace(/[return]/g, '');
   sampleText = sampleText.replace(/[&nbsp,\d*];/g, '');
   sampleText = sampleText.replace(/[\d]/g, '');
+  sampleText = sampleText.replace(/\b\w\b/g, '');
   sampleText = sampleText.match(/\b\w+\b/g);
+
 
   return sampleText;
 };
