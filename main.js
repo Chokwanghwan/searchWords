@@ -12,26 +12,31 @@ function xhrGet(url, callback) {
 chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.action == "getSource") {
     var sampleText = strip_tags(request.source);
+    console.log("sampleText type : " + typeof(sampleText));
     var rawWordData = extractWords(sampleText);
-    console.log("testtesttest"+rawWordData);
-
+    console.log("rawWordData type out makeWordDictionary : " + typeof(rawWordData));
     var wordDictionary = makeWordDictionary(rawWordData);
+    console.log("wordDictionary type : " + typeof(wordDictionary));
     var translateData = translateWords(wordDictionary);
+    console.log("translateData type : " + typeof(translateData));
 
     message.innerHTML = "";
   }
 });
 
-function printOnDiv(word) {
+function printOnDiv(word, mean) {
+    console.log("printOnDic start");
     var div = document.createElement('div');
-    div.setAttribute('class', 'half tile');
+    div.setAttribute('class', 'tile');
     document.body.appendChild(div); 
 
-    div.innerHTML=word;
+    div.innerHTML=word+"<br>"+mean[0]+", "+mean[1];
+    console.log("printOnDic end");
 }
 
 //번역, 검색 불가능 단어 제거
 function translateWords(wordDictionary) {
+  console.log("translateWords start");
   var keys = Object.keys(wordDictionary);
     var index = parseInt(Math.random()*keys.length);
     var dictList = [];
@@ -42,39 +47,43 @@ function translateWords(wordDictionary) {
         var obj = JSON.parse(xhr.responseText);
         if(obj.hasOwnProperty('entryName')){
           dictList.push(obj['entryName']);
-          printOnDiv(obj['entryName']);
+          printOnDiv(obj['entryName'], obj['mean']);
+          console.log(obj['entryName'] + "   " + obj['mean']);
         }
       });
     }
+    console.log("translateWords end");
+    return "haha";
 };
 
 //중복 단어 제거, Dictionary형태로 재구성
 function makeWordDictionary(rawData) {
+  console.log("makeWordDictionary start");
   var wordList = rawData;
   var wordDict = {}
   for(var i=0; i<wordList.length; i++){
       var word = wordList[i];
-      console.log("test["+i+"] = "+word);
+      console.log('log='+i +':'+wordList[i]);
       if (wordDict.hasOwnProperty(word)) {
         wordDict[word]++;
       } else {
         wordDict[word] = 1;
       }
   }
-
+  console.log("makeWordDictionary end");
   return wordDict;
 };
 
 //단어 단위로 분류, 공백과 불필요 문자, 숫자 제거 + 알파벳 한개짜리 단어, return(특정 에러 유발) 제거
 function extractWords(sampleText) {
-  //return sampleText.replace(/^\s/gm, '');
-  sampleText = sampleText.replace(/[return]/g, '');
-  sampleText = sampleText.replace(/[&nbsp,\d*];/g, '');
-  sampleText = sampleText.replace(/[\d]/g, '');
-  sampleText = sampleText.replace(/\b\w\b/g, '');
-  sampleText = sampleText.match(/\b\w+\b/g);
+  console.log("extractWords start");
+  sampleText = sampleText.replace(/hasOwnProperty/g, ''); //hasOwnProperty 제거
+  sampleText = sampleText.replace(/&nbsp/g, ''); //&nbsp 제거
+  sampleText = sampleText.replace(/[\d]/g, ''); //숫자 제거
+  sampleText = sampleText.replace(/\b\w\b/g, ''); //알파벳 한개짜리 단어 제거
+  sampleText = sampleText.match(/\b\w+\b/g); //단어 단위로 추출
 
-
+  console.log("extractWords end");
   return sampleText;
 };
 
