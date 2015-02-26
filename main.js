@@ -29,43 +29,70 @@ chrome.extension.onMessage.addListener(function(request, sender) {
 //번역, 검색 불가능 단어 제거
 function translateWords(wordDictionary) {
   var keys = Object.keys(wordDictionary);
-    var index = parseInt(Math.random()*keys.length);
-    var dictList = [];
+    // var index = parseInt(Math.random()*keys.length);
+    var wordList = [];
+    var meanList = [];
     var keyCount=0;
+    
     for(var i =0; i<keys.length; i++){
       var url = "http://tooltip.dic.naver.com/tooltip.nhn?wordString=" + keys[i] + "&languageCode=4&nlp=false";
-      
       xhrGet(url, function(xhr, callback) {
         var obj = JSON.parse(xhr.responseText);
         keyCount++;
         if(obj.hasOwnProperty('entryName')){
-          dictList.push(obj['entryName']);
-          printOnDiv(obj['entryName'], obj['mean']);
-          console.log(obj['entryName'] + "   " + obj['mean']);
+          wordList.push(obj['entryName']);
+          meanList.push(obj['mean']);
+
+          // printOnDiv(obj['entryName'], obj['mean']);
+          // console.log(obj['entryName'] + "   " + obj['mean']);
         }
-        console.log('keyCount='+keyCount+"/"+keys.length );
+        // console.log('keyCount='+keyCount+"/"+keys.length );
         if(keyCount==keys.length){
-          saveWord(dictList);
+          saveWord(wordList, meanList);
         }
       });
     }
+
 };
 
 //웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는 
 //혹은 현재 화면에 보일만한 예를들면 한 7~10줄정도의 데이터만 후딱 우선순위 알고리즘 돌려서 처리하고 나머지는 비동기로 천천히 처리해도 괜찮을듯.
-function printOnDiv(word, mean) {
+function printOnDiv(word, mean, seq) {
+    //div 생성
     var div = document.createElement('div');
     div.setAttribute('class', 'tile');
+    div.setAttribute('id', 'word'+seq);
     document.body.appendChild(div); 
 
-    div.innerHTML=word+"<br>"+mean[0]+", "+mean[1];
-}
+    //버튼 리스너
+    var searchBtn = document.getElementById('word'+seq);
+    searchBtn.addEventListener('click', function(event) {
+      console.log("word"+seq+" div click!!!!!!!!!!!!!");
+    });
 
-//서버에 보낼 데이터
-function saveWord(dictList){
-  var finalData = dictList;
-  console.log("finalData : "+finalData);
-}
+
+    div.innerHTML=word+"<br>"+mean[0]+", "+mean[1];
+};
+
+function deleteWord() {
+  
+};
+
+function searchWord() {
+
+};
+
+//클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
+function saveWord(wordList, meanList){
+  var finalWord = wordList;
+  var finalMean = meanList
+
+  for (var i=0; i<finalWord.length; i++) {
+    console.log(finalWord[i]+" : "+finalMean[i]);
+    printOnDiv(finalWord[i], finalMean[i], i);
+  }
+
+};
 
 //중복 단어 제거, Dictionary형태로 재구성
 function makeWordDictionary(rawData) {
@@ -73,7 +100,7 @@ function makeWordDictionary(rawData) {
   var wordDict = {}
   for(var i=0; i<wordList.length; i++){
       var word = wordList[i];
-      console.log('log='+i +':'+wordList[i]);
+      //console.log('log='+i +':'+wordList[i]);
       if (wordDict.hasOwnProperty(word)) {
         wordDict[word]++;
       } else {
