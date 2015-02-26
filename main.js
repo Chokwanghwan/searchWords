@@ -31,7 +31,6 @@ function translateWords(wordDictionary) {
   var keys = Object.keys(wordDictionary);
     // var index = parseInt(Math.random()*keys.length);
     var wordList = [];
-    var meanList = [];
     var keyCount=0;
     
     for(var i =0; i<keys.length; i++){
@@ -40,42 +39,45 @@ function translateWords(wordDictionary) {
         var obj = JSON.parse(xhr.responseText);
         keyCount++;
         if(obj.hasOwnProperty('entryName')){
-          wordList.push(obj['entryName']);
-          meanList.push(obj['mean']);
+          var word = obj['entryName'];
+          var mean = obj['mean'];
+
+          wordList.push({'key':word,'mean':mean});
 
           // printOnDiv(obj['entryName'], obj['mean']);
           // console.log(obj['entryName'] + "   " + obj['mean']);
         }
         // console.log('keyCount='+keyCount+"/"+keys.length );
         if(keyCount==keys.length){
-          saveWord(wordList, meanList);
+          saveWord(wordList);
         }
       });
     }
-
 };
 
 //웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는 
 //혹은 현재 화면에 보일만한 예를들면 한 7~10줄정도의 데이터만 후딱 우선순위 알고리즘 돌려서 처리하고 나머지는 비동기로 천천히 처리해도 괜찮을듯.
-function printOnDiv(word, mean, seq) {
+function printOnDiv(wordObject) {
     //div 생성
     var div = document.createElement('div');
     div.setAttribute('class', 'tile');
-    div.setAttribute('id', 'word'+seq);
-    document.body.appendChild(div); 
+    div.setAttribute('id', wordObject.key);
+    document.body.appendChild(div);
 
     //버튼 리스너
-    var searchBtn = document.getElementById('word'+seq);
+    var searchBtn = document.getElementById(wordObject.key);
     searchBtn.addEventListener('click', function(event) {
-      console.log("word"+seq+" div click!!!!!!!!!!!!!");
+      console.log(wordObject.key);
+      // deleteWord("word"+seq);
+      //클릭시 div가 사라지고 데이터가 내 db에서 삭제되고 삭제된 단어들이 모이는 리스트에 해당 단어가 추가된다.
+      //익스텐션 실행시 
     });
-
-
-    div.innerHTML=word+"<br>"+mean[0]+", "+mean[1];
+    div.innerHTML=wordObject.key+"<br>"+wordObject.mean[0]+", "+wordObject.mean[1];
 };
 
-function deleteWord() {
-  
+function deleteWord(id) {
+  var id = this.id;
+  console.log("id : "+id);
 };
 
 function searchWord() {
@@ -83,15 +85,12 @@ function searchWord() {
 };
 
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
-function saveWord(wordList, meanList){
-  var finalWord = wordList;
-  var finalMean = meanList
+function saveWord(wordList){
+  for (var i in wordList){ 
+    console.log("dictList."+wordList[i].key+" = "+wordList[i].mean)
 
-  for (var i=0; i<finalWord.length; i++) {
-    console.log(finalWord[i]+" : "+finalMean[i]);
-    printOnDiv(finalWord[i], finalMean[i], i);
+    printOnDiv(wordList[i]);
   }
-
 };
 
 //중복 단어 제거, Dictionary형태로 재구성
