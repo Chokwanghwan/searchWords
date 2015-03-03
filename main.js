@@ -55,7 +55,13 @@ function translateWords(wordDictionary) {
     }
 };
 
-//웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는 
+//Div를 클릭시 여러 이벤트를 연계해서 발생할 수 있다.
+//ex) delete 연산, 추후 라벨기능 등 여러 기능 추가할 수 있음.
+// function divClickEvent(event, wordObject) { //여기에 왜 인자로 event 넘기는지 모르겠다.
+//   console.log("correct click + "+wordObject.key);
+// };
+
+//웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는
 //혹은 현재 화면에 보일만한 예를들면 한 7~10줄정도의 데이터만 후딱 우선순위 알고리즘 돌려서 처리하고 나머지는 비동기로 천천히 처리해도 괜찮을듯.
 function printOnDiv(wordObject) {
     //div 생성
@@ -64,24 +70,31 @@ function printOnDiv(wordObject) {
     div.setAttribute('id', wordObject.key);
     document.body.appendChild(div);
 
-    //버튼 리스너
+    // 버튼 리스너
     var searchBtn = document.getElementById(wordObject.key);
     searchBtn.addEventListener('click', function(event) {
-      console.log(wordObject.key);
-      // deleteWord("word"+seq);
+      // console.log(wordObject.key);
+      deleteWord(wordObject.key);
       //클릭시 div가 사라지고 데이터가 내 db에서 삭제되고 삭제된 단어들이 모이는 리스트에 해당 단어가 추가된다.
-      //익스텐션 실행시 
+      //익스텐션 실행시
     });
     div.innerHTML=wordObject.key+"<br>"+wordObject.mean[0]+", "+wordObject.mean[1];
 };
 
 function deleteWord(id) {
-  var id = this.id;
-  console.log("id : "+id);
+  // console.log("id : "+id);
+  var removeDiv = document.getElementById(id);
+  removeDiv.remove(removeDiv);
 };
 
-function searchWord() {
+//
+// var parent = document.getElementById("div1");
+// var child = document.getElementById("p1");
+// parent.removeChild(child);
+//
 
+function searchWord() {
+  
 };
 
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
