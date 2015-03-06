@@ -29,7 +29,7 @@ chrome.extension.onMessage.addListener(function(request, sender) {
     var sampleText = strip_tags(request.source);
     sampleText = extractWords(sampleText);
     sampleText = makeWordDictionary(sampleText);
-    sampleText = translateWords(sampleText);
+    translateWords(sampleText);
 
     message.innerHTML = "";
   }
@@ -77,7 +77,7 @@ function translateWords(wordDictionary) {
   var keys = Object.keys(wordDictionary);
     // var index = parseInt(Math.random()*keys.length);
     var keyCount=0;
-    var wordList = [];
+    var wordList = {};
     for(var i =0; i<keys.length; i++){
       var url = "http://tooltip.dic.naver.com/tooltip.nhn?wordString=" + keys[i] + "&languageCode=4&nlp=false";
       xhrGet(url, function(xhr, callback) {
@@ -86,19 +86,19 @@ function translateWords(wordDictionary) {
         if(obj.hasOwnProperty('entryName')){
           var word = obj['entryName'];
           var mean = obj['mean'];
-
-          wordList.push({'key':word,'mean':mean});
+          if(!wordList.hasOwnProperty(word))          
+            wordList[word] = {'key':word,'mean':mean};
         }
 
         if(keyCount==keys.length){
-          dataProvider(wordList, wordList.length);
+          dataProvider(wordList);
         }
       });
     }
 };
 
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
-function dataProvider(wordList, dictListLength){
+function dataProvider(wordList){
   //현재 단어를 UI로 구성하는 로직
   printOnDiv(wordList);
 
@@ -140,12 +140,10 @@ function printOnDiv(wordList) {
 
 function removeData(wordList, selectId) {
   //현재 페이지의 단어를 모아놓는 Dictionary에서 해당 단어 제거 로직
-  for (var i=0; i<wordList.length; i++) {
-    // console.log("wordList["+i+"] = "+wordList[i].key);
-    if (wordList[i].key == selectId) {
-      delete wordList[i];
-    }
-  }
+  console.log("selectId = "+selectId);
+  delete wordList[selectId];
+  console.log(selectId+':'+wordList.hasOwnProperty(selectId));
+  
 };
 
 function searchWord() {
