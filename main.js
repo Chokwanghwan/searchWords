@@ -9,6 +9,25 @@ function xhrGet(url, callback) {
     xhr.send()
 };
 
+function xhrPost(url, params ,callback) {
+    var xhr = new XMLHttpRequest();
+    var params = params;
+    xhr.open('POST', url, true);
+    //params format  :  "email=email&url=url&word=word"
+    
+    xhr.setRequestHeader("Content-type", "application/json", "charset=utf-8");
+    // xhr.setRequestHeader("Content-type", params.length);
+    // xhr.setRequestHeader("Connection", "close");
+
+    xhr.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          alert(xhr.responseText);
+          callback(this);
+        }
+    };
+    xhr.send(JSON.stringify(params));
+};
+
 function onWindowLoad() {
 
   var message = document.querySelector('#message');
@@ -16,7 +35,7 @@ function onWindowLoad() {
   chrome.tabs.executeScript(null, {
     file: "getPagesSource.js"
   }, function() {
-    // If you try and inject into an extensions page or the webstore/NTP you'll get an error
+    // If you try and inject into an extensions page or 보the webstore/NTP you'll get an error
     if (chrome.extension.lastError) {
       message.innerText = 'There was an error injecting script : \n' + chrome.extension.lastError.message;
     }
@@ -25,6 +44,7 @@ function onWindowLoad() {
 };
 
 chrome.extension.onMessage.addListener(function(request, sender) {
+  //url정 : sender.url
   if (request.action == "getSource") {
     var sampleText = strip_tags(request.source);
     sampleText = extractWords(sampleText);
@@ -87,7 +107,7 @@ function translateWords(wordDictionary) {
           var word = obj['entryName'];
           var mean = obj['mean'];
           if(!wordDict.hasOwnProperty(word))          
-            wordDict[word] = {'key':word,'mean':mean};
+            wordDict[word] = {'english':word,'mean':mean};
         }
 
         if(keyCount==keys.length){
@@ -100,6 +120,11 @@ function translateWords(wordDictionary) {
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
 var awordDict={};
 function dataProvider(wordDict){
+  debugger;
+  var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com", "words":wordDict};
+  xhrPost("http://localhost:5000/searchWords/insertData", param, function(xhr, callback) {
+    console.log(" ");
+  });
   //현재 단어를 UI로 구성하는 로직
   printOnDiv(wordDict);
   awordDict = wordDict
@@ -155,10 +180,10 @@ function printOnDiv(wordDict) {
     document.body.appendChild(div);
 
     // console.log("wordDict["+i+"].key = "+wordDict[i].key+"   :   wordDict["+i+"].mean = "+wordDict[i].mean);
-    div.innerHTML=wordDict[i].key+"<br>"+wordDict[i].mean[0]+", "+wordDict[i].mean[1];
+    div.innerHTML=wordDict[i].english+"<br>"+wordDict[i].mean[0]+", "+wordDict[i].mean[1];
 
     // 버튼 리스너
-    var clickBtn = document.getElementById(wordDict[i].key);
+    var clickBtn = document.getElementById(wordDict[i].english);
     clickBtn.addEventListener('click', function(event) {
       var selectId = event.target.id;
       
