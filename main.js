@@ -120,7 +120,6 @@ function translateWords(wordDictionary) {
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
 var awordDict={};
 function dataProvider(wordDict){
-  debugger;
   var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com", "words":wordDict};
   xhrPost("http://localhost:5000/searchWords/insertData", param, function(xhr, callback) {
     console.log(" ");
@@ -195,7 +194,10 @@ function printOnDiv(wordDict) {
       removeData(wordDict, selectId);
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
-      console.log("We need Server");
+      var param = {"email":"choBro@gmail.com", "english":selectId.toString()};
+      xhrPost("http://localhost:5000/searchWords/updateData", param, function(xhr, callback) {
+      console.log(" ");
+      });
     });
   }
 };
