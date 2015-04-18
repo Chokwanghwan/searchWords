@@ -118,17 +118,12 @@ function translateWords(wordDictionary) {
 };
 
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
-var awordDict={};
 function dataProvider(wordDict){
   var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com", "words":wordDict};
   xhrPost("http://localhost:5000/searchWords/insertData", param, function(xhr, callback) {
     console.log(" ");
   });
-  //현재 단어를 UI로 구성하는 로직
-  printOnDiv(wordDict);
-  awordDict = wordDict
   //데이터를 검색하기 위한 로직
-  search();
 };
 
 //검색어를 입력받는 keydown eventListener
@@ -167,22 +162,38 @@ function displaySearchResult(findWord) {
   }
 };
 
+function requsetWordToServer() {
+    var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com"};
+    xhrPost("http://localhost:5000/searchWords/selectDataForWeb", param, function(xhr, callback) {
+      console.log("select!");
+      // var obj = JSON.parse(xhr.responseText);
+      var obj = JSON.parse(xhr.responseText);
+      //만약 단어가 제대로 반환이 되었으면(즉, 단어 리스트가 null이 아니라면) 출력하고 
+      //단어 리스트가 null이라면 출력 x 
+      // console.log("obj = &*(&*(&*(" + obj);
+
+      printOnDiv(obj);
+  });
+}
+
 function printOnDiv(wordDict) {
   //웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는
   //혹은 현재 화면에 보일만한 예를들면 한 7~10줄정도의 데이터만 후딱 우선순위 알고리즘 돌려서 처리하고 나머지는 비동기로 천천히 처리해도 괜찮을듯.
 
-  for (var i in wordDict){
+  for (var word in wordDict){
     //div 생성
+    var w = wordDict[word].english;
+    var m = wordDict[word].mean;
     var div = document.createElement('div');
     div.setAttribute('class', 'tile');
-    div.setAttribute('id', i);
+    div.setAttribute('id', w);
     document.body.appendChild(div);
 
     // console.log("wordDict["+i+"].key = "+wordDict[i].key+"   :   wordDict["+i+"].mean = "+wordDict[i].mean);
-    div.innerHTML=wordDict[i].english+"<br>"+wordDict[i].mean[0]+", "+wordDict[i].mean[1];
+    div.innerHTML=w+"<br>"+m[0]+", "+m[1];
 
     // 버튼 리스너
-    var clickBtn = document.getElementById(wordDict[i].english);
+    var clickBtn = document.getElementById(wordDict[word].english);
     clickBtn.addEventListener('click', function(event) {
       var selectId = event.target.id;
       
@@ -209,5 +220,9 @@ function removeData(wordDict, selectId) {
   console.log(selectId+':'+wordDict.hasOwnProperty(selectId));
   
 };
+
+
+requsetWordToServer();
+search();
 
 window.onload = onWindowLoad;
