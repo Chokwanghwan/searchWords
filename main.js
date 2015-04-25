@@ -221,7 +221,7 @@ function printOnDiv(wordDict) {
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
       console.log("&*(2" + selectId.toString());
-      var param = "email=choBro@gmail.com&english="+selectId.toString();
+      var param = "email=choBro@gmail.com&english="+selectId.toString()+"&is_deleted=true";
         xhrPost(apiHost + "/searchWords/updateData", param, req_type_1, function(xhr, callback) {
         
       });
