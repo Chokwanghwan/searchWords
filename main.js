@@ -9,13 +9,12 @@ function xhrGet(url, callback) {
     xhr.send()
 };
 
-function xhrPost(url, params ,callback) {
+function xhrPost(url, params, req_type, callback) {
     var xhr = new XMLHttpRequest();
     var params = params;
     xhr.open('POST', url, true);
     //params format  :  "email=email&url=url&word=word"
     
-    xhr.setRequestHeader("Content-type", "application/json", "charset=utf-8");
     // xhr.setRequestHeader("Content-type", params.length);
     // xhr.setRequestHeader("Connection", "close");
 
@@ -25,33 +24,52 @@ function xhrPost(url, params ,callback) {
           callback(this);
         }
     };
-    xhr.send(JSON.stringify(params));
+    console.log(params);
+
+    if (req_type === "DEFAULT") {
+      xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      // xhr.setRequestHeader("Content-length", params.length);
+      // xhr.setRequestHeader("Connection", "close");
+      xhr.send(params);
+    } else if (req_type === "JSON") {
+      xhr.setRequestHeader("Content-type", "application/json", "charset=utf-8");
+      xhr.send(JSON.stringify(params));
+    } else {
+      console.log("고려되지 않은 경우입니다.");
+      return;
+    }
 };
+
+var req_type_1 = "DEFAULT";
+var req_type_2 = "JSON";
 
 function onWindowLoad() {
 
-  var message = document.querySelector('#message');
+  // var message = document.querySelector('#message');
 
   chrome.tabs.executeScript(null, {
     file: "getPagesSource.js"
   }, function() {
-    // If you try and inject into an extensions page or 보the webstore/NTP you'll get an error
+    // If you try and inject into an extensions page or the webstore/NTP you'll get an error
     if (chrome.extension.lastError) {
-      message.innerText = 'There was an error injecting script : \n' + chrome.extension.lastError.message;
+      // message.innerText = 'There was an error injecting script : \n' + chrome.extension.lastError.message;
     }
   });
 
 };
 
+
 chrome.extension.onMessage.addListener(function(request, sender) {
   //url정 : sender.url
+  var url = sender.url
+  var currentUrl = url.toString();
+  // console.log("currentUrl : "+ currentUrl);
   if (request.action == "getSource") {
     var sampleText = strip_tags(request.source);
     sampleText = extractWords(sampleText);
     sampleText = makeWordDictionary(sampleText);
     translateWords(sampleText);
-
-    message.innerHTML = "";
+    // message.innerHTML = "";
   }
 });
 
@@ -106,7 +124,7 @@ function translateWords(wordDictionary) {
         if(obj.hasOwnProperty('entryName')){
           var word = obj['entryName'];
           var mean = obj['mean'];
-          if(!wordDict.hasOwnProperty(word))          
+          if(!wordDict.hasOwnProperty(word))
             wordDict[word] = {'english':word,'mean':mean};
         }
 
@@ -116,12 +134,15 @@ function translateWords(wordDictionary) {
       });
     }
 };
-
+// var apiHost = "http://localhost:5000"
+var apiHost = "http://54.92.37.26"
 //클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
 function dataProvider(wordDict){
-  var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com", "words":wordDict};
-  xhrPost("http://localhost:5000/searchWords/insertData", param, function(xhr, callback) {
-    console.log(" ");
+  // console.log("currentUrl in dataProvider : " +currentUrl);
+  var param = {"email":"choBro@gmail.com", "url":"http://yoyo.com", "words":wordDict};
+  xhrPost(apiHost + "/searchWords/insertData", param, req_type_2 ,function(xhr, callback) {
+    // console.log(" ");
+    requsetWordToServer();
   });
   //데이터를 검색하기 위한 로직
 };
@@ -163,8 +184,9 @@ function displaySearchResult(findWord) {
 };
 
 function requsetWordToServer() {
-    var param = {"email":"choBro@gmail.com", "url":"http://kwanggoo.com"};
-    xhrPost("http://localhost:5000/searchWords/selectDataForWeb", param, function(xhr, callback) {
+  // console.log("currentUrl in requsetWordToServer : " +currentUrl);
+    var param = {"email":"choBro@gmail.com", "url":"http://yoyo.com"};
+    xhrPost(apiHost + "/searchWords/selectDataForWeb", param, req_type_2, function(xhr, callback) {
       console.log("select!");
       // var obj = JSON.parse(xhr.responseText);
       var obj = JSON.parse(xhr.responseText);
@@ -196,6 +218,13 @@ function printOnDiv(wordDict) {
     var clickBtn = document.getElementById(wordDict[word].english);
     clickBtn.addEventListener('click', function(event) {
       var selectId = event.target.id;
+
+      //서버의 DB에 해당 데이터 삭제를 요청하는 로직
+      console.log("&*(2" + selectId.toString());
+      var param = "email=choBro@gmail.com&english="+selectId.toString();
+        xhrPost(apiHost + "/searchWords/updateData", param, req_type_1, function(xhr, callback) {
+        
+      });
       
       //현재페이지의 단어를 담은 Div 삭제 로직
       var removeDiv = document.getElementById(selectId);
@@ -204,11 +233,6 @@ function printOnDiv(wordDict) {
       //현재페이지의 단어를 모아놓는 Dictionary에서 해당 단어 제거 로직
       removeData(wordDict, selectId);
 
-      //서버의 DB에 해당 데이터 삭제를 요청하는 로직
-      var param = {"email":"choBro@gmail.com", "english":selectId.toString()};
-      xhrPost("http://localhost:5000/searchWords/updateData", param, function(xhr, callback) {
-      console.log(" ");
-      });
     });
   }
 };
@@ -221,8 +245,6 @@ function removeData(wordDict, selectId) {
   
 };
 
-
-requsetWordToServer();
-search();
+    search();
 
 window.onload = onWindowLoad;
