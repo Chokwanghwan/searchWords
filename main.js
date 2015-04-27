@@ -9,6 +9,8 @@ function xhrGet(url, callback) {
     xhr.send()
 };
 
+var XHR_TYPE_FORM = "xhr_type_form";
+var XHR_TYPE_JSON = "xhr_type_json";
 function xhrPost(url, params, req_type, callback) {
     var xhr = new XMLHttpRequest();
     var params = params;
@@ -20,18 +22,16 @@ function xhrPost(url, params, req_type, callback) {
 
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
-          alert(xhr.responseText);
+          // alert(xhr.responseText);
           callback(this);
         }
     };
     console.log(params);
 
-    if (req_type === "DEFAULT") {
+    if (req_type === XHR_TYPE_FORM) {
       xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      // xhr.setRequestHeader("Content-length", params.length);
-      // xhr.setRequestHeader("Connection", "close");
       xhr.send(params);
-    } else if (req_type === "JSON") {
+    } else if (req_type === XHR_TYPE_JSON) {
       xhr.setRequestHeader("Content-type", "application/json", "charset=utf-8");
       xhr.send(JSON.stringify(params));
     } else {
@@ -40,172 +40,43 @@ function xhrPost(url, params, req_type, callback) {
     }
 };
 
-var req_type_1 = "DEFAULT";
-var req_type_2 = "JSON";
-
 function onWindowLoad() {
-
-  // var message = document.querySelector('#message');
-
-  chrome.tabs.executeScript(null, {
-    file: "getPagesSource.js"
-  }, function() {
-    // If you try and inject into an extensions page or the webstore/NTP you'll get an error
-    if (chrome.extension.lastError) {
-      // message.innerText = 'There was an error injecting script : \n' + chrome.extension.lastError.message;
-    }
-  });
-
+  requsetWordToServer();
 };
 
 
-chrome.extension.onMessage.addListener(function(request, sender) {
-  //url정 : sender.url
-  var url = sender.url
-  var currentUrl = url.toString();
-  // console.log("currentUrl : "+ currentUrl);
-  if (request.action == "getSource") {
-    var sampleText = strip_tags(request.source);
-    sampleText = extractWords(sampleText);
-    sampleText = makeWordDictionary(sampleText);
-    translateWords(sampleText);
-    // message.innerHTML = "";
-  }
-});
+// chrome.extension.onMessage.addListener(function(request, sender) {
+//   //url정 : sender.url
+  
+// });
 
-//HTML태그 제거
-function strip_tags (input, allowed) {
-    allowed = (((allowed || "") + "").toLowerCase().match(/<[a-z][a-z0-9]*>/g) || []).join(''); // making sure the allowed arg is a string containing only tags in lowercase (<a><b><c>)
-    var tags = /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
-        commentsAndPhpTags = /<!--[\s\S]*?-->|<\?(?:php)?[\s\S]*?\?>/gi;
-    return input.replace(commentsAndPhpTags, '').replace(tags, function ($0, $1) {        
-      return allowed.indexOf('<' + $1.toLowerCase() + '>') > -1 ? $0 : '';
-    });
-};
 
-//단어 단위로 분류, 공백과 불필요 문자, 숫자 제거 + 알파벳 한개짜리 단어, hasOwnProperty(특정 에러 유발) 제거
-function extractWords(sampleText) {
-  sampleText = sampleText.replace(/hasOwnProperty/g, ''); //hasOwnProperty 제거
-  sampleText = sampleText.replace(/&nbsp/g, ''); //&nbsp 제거
-  sampleText = sampleText.replace(/[\d]/g, ''); //숫자 제거
-  sampleText = sampleText.replace(/\b\w\b/g, ''); //알파벳 한개짜리 단어 제거
-  sampleText = sampleText.match(/\b\w+\b/g); //단어 단위로 추출
-
-  return sampleText;
-};
-
-//중복 단어 제거, Dictionary형태로 재구성
-function makeWordDictionary(rawData) {
-  var wordList = rawData;
-  var wordDict = {}
-  for(var i=0; i<wordList.length; i++){
-      var word = wordList[i];
-      //console.log('log='+i +':'+wordList[i]);
-      if (wordDict.hasOwnProperty(word)) {
-        wordDict[word]++;
-      } else {
-        wordDict[word] = 1;
-      }
-  }
-  return wordDict;
-};
-
-//번역, 검색 불가능 단어 제거
-function translateWords(wordDictionary) {
-  var keys = Object.keys(wordDictionary);
-    // var index = parseInt(Math.random()*keys.length);
-    var keyCount=0;
-    var wordDict = {};
-    for(var i =0; i<keys.length; i++){
-      var url = "http://tooltip.dic.naver.com/tooltip.nhn?wordString=" + keys[i] + "&languageCode=4&nlp=false";
-      xhrGet(url, function(xhr, callback) {
-        var obj = JSON.parse(xhr.responseText);
-        keyCount++;
-        if(obj.hasOwnProperty('entryName')){
-          var word = obj['entryName'];
-          var mean = obj['mean'];
-          if(!wordDict.hasOwnProperty(word))
-            wordDict[word] = {'english':word,'mean':mean};
-        }
-
-        if(keyCount==keys.length){
-          dataProvider(wordDict);
-        }
-      });
-    }
-};
-// var apiHost = "http://localhost:5000"
-var apiHost = "http://54.92.37.26"
-//클라이언트에서 처리할 수 있는 모든 처리를 끝마친 최종데이터, 출력과 서버전송에 사용한다.
-function dataProvider(wordDict){
-  // console.log("currentUrl in dataProvider : " +currentUrl);
-  var param = {"email":"choBro@gmail.com", "url":"http://yoyo.com", "words":wordDict};
-  xhrPost(apiHost + "/searchWords/insertData", param, req_type_2 ,function(xhr, callback) {
-    // console.log(" ");
-    requsetWordToServer();
-  });
-  //데이터를 검색하기 위한 로직
-};
-
-//검색어를 입력받는 keydown eventListener
-function search() {
-  document.getElementById("inputString").addEventListener('keydown',function(event){
-    var inputString = String.fromCharCode(event.keyCode);
-    var originString = document.getElementById("inputString").value; 
-
-    // console.log("***"+inputString.toLowerCase()+document.getElementById("inputString").value);
-
-    if(event.keyCode == 13) {
-      //엔터부분
-    } else if (65<=event.keyCode && event.keyCode <= 90) {
-      originString += inputString.toLowerCase();
-      displaySearchResult(originString);
-      console.log("complete input = " +originString);
-    } else if (event.keyCode == 8) {
-      //text = text.substring(0, text.length-1);
-      originString = originString.substring(0, originString.length-1);
-      console.log("press backspace = " +originString);
-      displaySearchResult(originString);
-    }
-  });
-};
-
-//textbox에 입력된 데이터와 wordDict의 데이터를 비교후 div 제어
-function displaySearchResult(findWord) {
-  console.log("findWord out of loop = "+findWord);
-  for(var key in awordDict){
-    if(key.indexOf(findWord)==0){
-      console.log("findWord = "+findWord);
-      document.getElementById(key).style.display="block";
-    }else{
-      document.getElementById(key).style.display="none";
-    }
-  }
-};
-
+var apiHost = "http://localhost:5000"
+// var apiHost = "http://54.92.37.26"
+var wordDict = {};
 function requsetWordToServer() {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
-    var param = {"email":"choBro@gmail.com", "url":"http://yoyo.com"};
-    xhrPost(apiHost + "/searchWords/selectDataForWeb", param, req_type_2, function(xhr, callback) {
-      console.log("select!");
+    var param = {"email":"choBro@gmail.com", "url":"http://a.com"};
+    xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
       // var obj = JSON.parse(xhr.responseText);
-      var obj = JSON.parse(xhr.responseText);
+      wordDict = JSON.parse(xhr.responseText);
       //만약 단어가 제대로 반환이 되었으면(즉, 단어 리스트가 null이 아니라면) 출력하고 
       //단어 리스트가 null이라면 출력 x 
-      // console.log("obj = &*(&*(&*(" + obj);
-
-      printOnDiv(obj);
+      printOnDiv();
   });
 }
 
-function printOnDiv(wordDict) {
+// requsetWordToServer(); >> select 하는 메서드
+
+function printOnDiv() {
   //웹 출력 함수 // 처음에는 베이직한 div 보내고 나중에 처리 다 끝나고 우선순위 추출알고리즘 다 돌리면 특정 색상으로 변환하는
   //혹은 현재 화면에 보일만한 예를들면 한 7~10줄정도의 데이터만 후딱 우선순위 알고리즘 돌려서 처리하고 나머지는 비동기로 천천히 처리해도 괜찮을듯.
 
-  for (var word in wordDict){
+  for (var index in wordDict){
     //div 생성
-    var w = wordDict[word].english;
-    var m = wordDict[word].mean;
+    var word = wordDict[index];
+    var w = word.english;
+    var m = word.mean;
     var div = document.createElement('div');
     div.setAttribute('class', 'tile');
     div.setAttribute('id', w);
@@ -215,15 +86,15 @@ function printOnDiv(wordDict) {
     div.innerHTML=w+"<br>"+m[0]+", "+m[1];
 
     // 버튼 리스너
-    var clickBtn = document.getElementById(wordDict[word].english);
+    var clickBtn = document.getElementById(word.english);
     clickBtn.addEventListener('click', function(event) {
       var selectId = event.target.id;
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
       console.log("&*(2" + selectId.toString());
       var param = "email=choBro@gmail.com&english="+selectId.toString()+"&is_deleted=true";
-        xhrPost(apiHost + "/searchWords/updateData", param, req_type_1, function(xhr, callback) {
-        
+      xhrPost(apiHost + "/searchWords/updateData", param, XHR_TYPE_FORM, function(xhr) {
+
       });
       
       //현재페이지의 단어를 담은 Div 삭제 로직
@@ -231,20 +102,51 @@ function printOnDiv(wordDict) {
       removeDiv.remove(selectId);
 
       //현재페이지의 단어를 모아놓는 Dictionary에서 해당 단어 제거 로직
-      removeData(wordDict, selectId);
+      removeData(selectId);
 
     });
   }
 };
 
-function removeData(wordDict, selectId) {
+function removeData(selectId) {
   //현재 페이지의 단어를 모아놓는 Dictionary에서 해당 단어 제거 로직
-  console.log("selectId = "+selectId);
+  // console.log("selectId = "+selectId);
   delete wordDict[selectId];
-  console.log(selectId+':'+wordDict.hasOwnProperty(selectId));
-  
+  // console.log(selectId+':'+wordDict.hasOwnProperty(selectId));
 };
 
-    search();
+//textbox에 입력된 데이터와 wordDict의 데이터를 비교후 div 제어
+function displaySearchResult(findWord) {
+  var word;
+  for(var key in wordDict){
+    word = wordDict[key];
+    if(word.english.indexOf(findWord)==0){
+      document.getElementById(word.english).style.display="block";
+    }else{
+      document.getElementById(word.english).style.display="none";
+    }
+  }
+};
 
+//검색어를 입력받는 keydown eventListener
+function searchWord() {
+  document.getElementById("inputString").addEventListener('keydown',function(event){
+    var inputString = String.fromCharCode(event.keyCode);
+    var originString = document.getElementById("inputString").value;
+
+    // console.log("***"+inputString.toLowerCase()+document.getElementById("inputString").value);
+
+    if(event.keyCode == 13) {
+      //엔터부분
+    } else if (65<=event.keyCode && event.keyCode <= 90) {
+      originString += inputString.toLowerCase();
+      displaySearchResult(originString, wordDict);
+    } else if (event.keyCode == 8) {
+      //text = text.substring(0, text.length-1);
+      originString = originString.substring(0, originString.length-1);
+      displaySearchResult(originString, wordDict);
+    }
+  });
+};
+searchWord();
 window.onload = onWindowLoad;
