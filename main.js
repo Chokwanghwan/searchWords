@@ -39,9 +39,10 @@ function xhrPost(url, params, req_type, callback) {
       return;
     }
 };
-
+var wordDict = {};
 function onWindowLoad() {
   requsetWordToServer();
+  searchWord();
 };
 
 
@@ -53,10 +54,9 @@ function onWindowLoad() {
 
 var apiHost = "http://localhost:5000"
 // var apiHost = "http://54.92.37.26"
-var wordDict = {};
 function requsetWordToServer() {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
-    var param = {"email":"choBro@gmail.com", "url":"http://a.com"};
+    var param = {"email":"email@email.email", "url":"http://developer.android.com/index.html"};
     xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
       // var obj = JSON.parse(xhr.responseText);
       wordDict = JSON.parse(xhr.responseText);
@@ -92,7 +92,7 @@ function printOnDiv() {
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
       console.log("&*(2" + selectId.toString());
-      var param = "email=choBro@gmail.com&english="+selectId.toString()+"&is_deleted=true";
+      var param = "email=email@email.email&english="+selectId.toString()+"&is_deleted=true";
       xhrPost(apiHost + "/searchWords/updateData", param, XHR_TYPE_FORM, function(xhr) {
 
       });
@@ -109,10 +109,11 @@ function printOnDiv() {
 };
 
 function removeData(selectId) {
-  //현재 페이지의 단어를 모아놓는 Dictionary에서 해당 단어 제거 로직
-  // console.log("selectId = "+selectId);
-  delete wordDict[selectId];
-  // console.log(selectId+':'+wordDict.hasOwnProperty(selectId));
+  for(var i = wordDict.length - 1; i >= 0; i--) {
+    if(wordDict[i].english === selectId) {
+       wordDict.splice(i, 1);
+    }
+  }
 };
 
 //textbox에 입력된 데이터와 wordDict의 데이터를 비교후 div 제어
@@ -148,5 +149,4 @@ function searchWord() {
     }
   });
 };
-searchWord();
 window.onload = onWindowLoad;
