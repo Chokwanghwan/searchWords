@@ -15,14 +15,9 @@ function xhrPost(url, params, req_type, callback) {
     var xhr = new XMLHttpRequest();
     var params = params;
     xhr.open('POST', url, true);
-    //params format  :  "email=email&url=url&word=word"
     
-    // xhr.setRequestHeader("Content-type", params.length);
-    // xhr.setRequestHeader("Connection", "close");
-
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
-          // alert(xhr.responseText);
           callback(this);
         }
     };
@@ -35,34 +30,21 @@ function xhrPost(url, params, req_type, callback) {
       xhr.setRequestHeader("Content-type", "application/json", "charset=utf-8");
       xhr.send(JSON.stringify(params));
     } else {
-      console.log("고려되지 않은 경우입니다.");
-      return;
+
     }
 };
 var wordDict = {};
-function onWindowLoad() {
-  requsetWordToServer();
-  searchWord();
-};
-
-
-// chrome.extension.onMessage.addListener(function(request, sender) {
-//   //url정 : sender.url
-  
-// });
-
-
-var apiHost = "http://localhost:5000"
+var apiHost = "http://localhost:5000";
 // var apiHost = "http://54.92.37.26"
-function requsetWordToServer() {
+function requsetWordToServer(url) {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
-    var param = {"email":"email@email.email", "url":"http://developer.android.com/index.html"};
-    xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
-      // var obj = JSON.parse(xhr.responseText);
-      wordDict = JSON.parse(xhr.responseText);
-      //만약 단어가 제대로 반환이 되었으면(즉, 단어 리스트가 null이 아니라면) 출력하고 
-      //단어 리스트가 null이라면 출력 x 
-      printOnDiv();
+  var param = {"email":"email@email.email", "url":url};
+  xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
+    // var obj = JSON.parse(xhr.responseText);
+    wordDict = JSON.parse(xhr.responseText);
+    //만약 단어가 제대로 반환이 되었으면(즉, 단어 리스트가 null이 아니라면) 출력하고 
+    //단어 리스트가 null이라면 출력 x 
+    printOnDiv();
   });
 }
 
@@ -91,7 +73,6 @@ function printOnDiv() {
       var selectId = event.target.id;
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
-      console.log("&*(2" + selectId.toString());
       var param = "email=email@email.email&english="+selectId.toString()+"&is_deleted=true";
       xhrPost(apiHost + "/searchWords/updateData", param, XHR_TYPE_FORM, function(xhr) {
 
@@ -149,4 +130,10 @@ function searchWord() {
     }
   });
 };
-window.onload = onWindowLoad;
+
+chrome.tabs.query({active: true, currentWindow: true}, function(arrayOfTabs) {
+  var activeTab = arrayOfTabs[0];
+  var url = activeTab.url;
+  requsetWordToServer(url);
+  searchWord();
+});
