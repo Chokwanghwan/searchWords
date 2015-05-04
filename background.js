@@ -22,7 +22,6 @@ function xhrPost(url, params, req_type, callback) {
 
     xhr.onreadystatechange = function() {
         if (this.readyState == 4) {
-          // alert(xhr.responseText);
           callback(this);
         }
     };
@@ -54,6 +53,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
       });
     }
 });
+
 
 chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.action == "getSource") {
@@ -107,6 +107,7 @@ function makeWordDictionary(rawData) {
 //번역, 검색 불가능 단어 제거
 function translateWords(wordDictionary, callback) {
   var keys = Object.keys(wordDictionary);
+
     // var index = parseInt(Math.random()*keys.length);
     var keyCount=0;
     var wordDict = {};
@@ -134,6 +135,5 @@ var apiHost = "http://localhost:5000"
 
 function insertDataToServer(email, url, wordDict) {
   var param = {"email":email, "url":url, "words":wordDict};
-  alert();
   xhrPost(apiHost + "/searchWords/insertData", param, XHR_TYPE_JSON ,function(xhr) {});
 }
