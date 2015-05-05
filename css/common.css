@@ -1,0 +1,73 @@
+.fui-search:before {
+  background: url(search.png) 0 0;
+}
+
+* {
+  background-repeat: no-repeat;
+  color: inherit;
+  font: inherit;
+  text-shadow: inherit;
+  -webkit-font-smoothing: inherit;
+}
+body {
+  font-size: 12px;
+  font-family: GothamMedium, NanumGothic, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+  padding: 0;
+  background: #eff0f2;
+}
+
+textarea,
+div[contenteditable] {
+  border: none;
+  outline: none;
+  resize: none;
+}
+div,
+h3,
+h4,
+span,
+a,
+ul,
+li,
+button,
+input {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: #333333;
+  background: none;
+  overflow: default;
+  box-shadow: none;
+  min-height: 0;
+}
+[ng\:cloak],
+[ng-cloak],
+[data-ng-cloak],
+[x-ng-cloak],
+.ng-cloak,
+.x-ng-cloak {
+  display: none !important;
+}
+li {
+  list-style: none;
+}
+strong {
+  font-weight: bold;
+}
+button {
+  outline: 0;
+  text-decoration: none;
+  cursor: pointer;
+}
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+audio {
+  display: none;
+}
