@@ -140,11 +140,12 @@ function searchWord() {
       //엔터부분
     } else if (65<=event.keyCode && event.keyCode <= 90) {
       originString += inputString.toLowerCase();
-      displaySearchResult(originString, wordDict);
+      originString = originString.toLowerCase();
+      displaySearchResult(originString);
     } else if (event.keyCode == 8) {
       //text = text.substring(0, text.length-1);
       originString = originString.substring(0, originString.length-1);
-      displaySearchResult(originString, wordDict);
+      displaySearchResult(originString);
     }
   });
 };
