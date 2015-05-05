@@ -34,8 +34,8 @@ function xhrPost(url, params, req_type, callback) {
     }
 };
 var wordDict = {};
-var apiHost = "http://localhost:5000";
-// var apiHost = "http://54.92.37.26"
+// var apiHost = "http://localhost:5000";
+var apiHost = "http://54.92.37.26"
 function requsetWordToServer(url) {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
   var param = {"email":"email@email.email", "url":url};
@@ -56,21 +56,14 @@ function printOnDiv() {
 
   for (var index in wordDict){
     //div 생성
-    var word = wordDict[index];
-    var w = word.english;
-    var m = word.mean;
-    var div = document.createElement('div');
-    div.setAttribute('class', 'tile');
-    div.setAttribute('id', w);
-    document.body.appendChild(div);
-
-    // console.log("wordDict["+i+"].key = "+wordDict[i].key+"   :   wordDict["+i+"].mean = "+wordDict[i].mean);
-    div.innerHTML=w+"<br>"+m[0]+", "+m[1];
+    var word = wordDict[index];    
+    addCardDOM(word);
 
     // 버튼 리스너
-    var clickBtn = document.getElementById(word.english);
+    var div = document.getElementById(word.english);
+    var clickBtn = div.childNodes[2];
     clickBtn.addEventListener('click', function(event) {
-      var selectId = event.target.id;
+      var selectId = event.target.parentElement.getAttribute('id');
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
       var param = "email=email@email.email&english="+selectId.toString()+"&is_deleted=true";
@@ -88,6 +81,31 @@ function printOnDiv() {
     });
   }
 };
+
+function addCardDOM(word) {
+  var english = word.english;
+  var mean = word.mean;
+  var urlCount = 15;
+
+  var div = document.createElement('div');
+  div.setAttribute('id', english);
+
+  var str = "";
+  // str += "<h1>"+english+"<p>"+urlCount+" urls</p></h1>";
+  str += "<h1>"+english+"</h1>";
+  str += "<ul>";
+  for (var i in mean) {
+    str += "<li>"+mean[i]+"</li>"; 
+  }
+  str += "</ul>";
+  str += "<input type='button' value='I know' style='float: right;'>";
+  str += "<div id='url-counter'>"+urlCount+" urls</div>";
+  str += "<hr>"
+
+  div.innerHTML = str;
+  container.appendChild(div);
+}
+
 
 function removeData(selectId) {
   for(var i = wordDict.length - 1; i >= 0; i--) {
