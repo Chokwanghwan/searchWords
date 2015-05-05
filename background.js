@@ -130,8 +130,8 @@ function translateWords(wordDictionary, callback) {
     }
 };
 
-var apiHost = "http://localhost:5000"
-// var apiHost = "http://54.92.37.26"
+// var apiHost = "http://localhost:5000"
+var apiHost = "http://54.92.37.26"
 
 function insertDataToServer(email, url, wordDict) {
   var param = {"email":email, "url":url, "words":wordDict};
