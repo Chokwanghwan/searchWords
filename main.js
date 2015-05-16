@@ -1,3 +1,4 @@
+var testEmail = "kwanggoo@gmail.com"
 function xhrGet(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -38,7 +39,7 @@ var wordDict = {};
 var apiHost = "http://54.92.37.26"
 function requsetWordToServer(url) {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
-  var param = {"email":"email@email.email", "url":url};
+  var param = {"email":testEmail, "url":url};
   xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
     // var obj = JSON.parse(xhr.responseText);
     wordDict = JSON.parse(xhr.responseText);
@@ -66,7 +67,7 @@ function printOnDiv() {
       var selectId = event.target.parentElement.getAttribute('id');
 
       //서버의 DB에 해당 데이터 삭제를 요청하는 로직
-      var param = "email=email@email.email&english="+selectId.toString()+"&is_deleted=true";
+      var param = "email="+testEmail+"&english="+selectId.toString()+"&is_deleted=true";
       xhrPost(apiHost + "/searchWords/updateData", param, XHR_TYPE_FORM, function(xhr) {
 
       });
@@ -85,7 +86,7 @@ function printOnDiv() {
 function addCardDOM(word) {
   var english = word.english;
   var mean = word.mean;
-  var urlCount = 15;
+  var urlCount = word.urls;
 
   var div = document.createElement('div');
   div.setAttribute('id', english);
@@ -103,6 +104,7 @@ function addCardDOM(word) {
   str += "<hr>"
 
   div.innerHTML = str;
+  var container = document.getElementById('container');
   container.appendChild(div);
 }
 

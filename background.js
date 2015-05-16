@@ -58,7 +58,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 chrome.extension.onMessage.addListener(function(request, sender) {
   if (request.action == "getSource") {
     var url = sender.url;
-    var email = 'email@email.email';
+    var email = 'kwanggoo@gmail.com';
     var removeHtmlTag = strip_tags(request.source); //HTML tag 제거
     var afterExtract = extractWords(removeHtmlTag); //정규표현식 본문추출
     var afterMakeDict = makeWordDictionary(afterExtract); //Dictionary 
