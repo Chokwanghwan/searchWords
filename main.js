@@ -35,11 +35,12 @@ function xhrPost(url, params, req_type, callback) {
     }
 };
 var wordDict = {};
-// var apiHost = "http://localhost:5000";
-var apiHost = "http://54.92.37.26"
+var apiHost = "http://localhost:5000";
+// var apiHost = "http://54.92.37.26"
 function requsetWordToServer(url) {
   // console.log("currentUrl in requsetWordToServer : " +currentUrl);
   var param = {"email":testEmail, "url":url};
+  console.log("param" + param);
   xhrPost(apiHost + "/searchWords/selectDataForWeb", param, XHR_TYPE_JSON, function(xhr) {
     // var obj = JSON.parse(xhr.responseText);
     wordDict = JSON.parse(xhr.responseText);
@@ -87,6 +88,7 @@ function addCardDOM(word) {
   var english = word.english;
   var mean = word.mean;
   var urlCount = word.urls;
+  console.log("urlCount = " + urlCount);
 
   var div = document.createElement('div');
   div.setAttribute('id', english);
@@ -101,7 +103,7 @@ function addCardDOM(word) {
   str += "</ul>";
   str += "<input type='button' value='I know' style='float: right;'>";
   str += "<div id='url-counter'>"+urlCount+" urls</div>";
-  str += "<hr>"
+  str += "<hr>";
 
   div.innerHTML = str;
   var container = document.getElementById('container');
