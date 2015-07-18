@@ -87,8 +87,8 @@ function printOnDiv() {
 function addCardDOM(word) {
   var english = word.english;
   var mean = word.mean;
-  var urlCount = word.urls;
-  console.log("urlCount = " + urlCount);
+  // var urlCount = word.urls;
+  // console.log("urlCount = " + urlCount);
 
   var div = document.createElement('div');
   div.setAttribute('id', english);
@@ -102,7 +102,7 @@ function addCardDOM(word) {
   }
   str += "</ul>";
   str += "<input type='button' value='I know' style='float: right;'>";
-  str += "<div id='url-counter'>"+urlCount+" urls</div>";
+  // str += "<div id='url-counter'>"+urlCount+" urls</div>";
   str += "<hr>";
 
   div.innerHTML = str;
